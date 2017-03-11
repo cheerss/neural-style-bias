@@ -230,11 +230,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
 def binary_crossentropy(a, b):
     def sigmoid(x):
-        return 1 / 1 + np.exp(-x)
+        return 1 / (1 + np.exp(-x))
     eps = 1e-8
     sig_a = sigmoid(a)
     sig_b = tf.sigmoid(b)
-    kl = sig_a * tf.log(sig_b + eps) + (1.0 - sig_a) * tf.log(1.0 - sig_b + eps)
+    kl = -( sig_a * tf.log(sig_b + eps) + (1.0 - sig_a) * tf.log(1.0 - sig_b + eps))
     return tf.reduce_sum(kl)
 
 def _tensor_size(tensor):
