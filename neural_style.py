@@ -28,8 +28,8 @@ ITERATIONS = 1000
 VGG_PATH = '../neural-style-modified/vgg.mat'
 STYLE_PATH = './examples/1-style.jpg'
 CONTENT_PATH = './examples/1-content.jpg'
-OUT_PATH = './examples/bias_loss/output.jpg'
-CHECK_PATH = './examples/bias_loss/iter%s.jpg'
+OUT_PATH = './examples/cross_entropy/output.jpg'
+CHECK_PATH = './examples/cross_entropy/iter%s.jpg'
 POOLING = 'max'
 
 def build_parser():

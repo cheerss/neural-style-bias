@@ -98,9 +98,10 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         content_loss = 0
         content_losses = []
         for content_layer in CONTENT_LAYERS:
-            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
-                    net[content_layer] - content_features[content_layer]) /
-                    content_features[content_layer].size))
+            content_losses.append(binary_crossentropy(content_features[content_layer], net[content_layer]))
+            # content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+            #         net[content_layer] - content_features[content_layer]) /
+            #         content_features[content_layer].size))
         content_loss += reduce(tf.add, content_losses)
 
         #bias loss
@@ -152,7 +153,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 (tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]) /
                     tv_x_size))
         # overall loss
-        loss = bias_loss
+        loss = content_loss
         # loss = bias_loss + content_loss
         # loss = style_loss + content_loss
 
@@ -175,6 +176,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 print_progress()
             for i in range(iterations):
                 stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
+                stderr.write('content loss: %g\n' % content_loss.eval())
                 train_step.run()
 
                 last_step = (i == iterations - 1)
@@ -226,6 +228,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                         img_out
                     )
 
+def binary_crossentropy(a, b):
+    def sigmoid(x):
+        return 1 / 1 + np.exp(-x)
+    eps = 1e-8
+    sig_a = sigmoid(a)
+    sig_b = tf.sigmoid(b)
+    kl = sig_a * tf.log(sig_b + eps) + (1.0 - sig_a) * tf.log(1.0 - sig_b + eps)
+    return tf.reduce_sum(kl)
 
 def _tensor_size(tensor):
     from operator import mul
