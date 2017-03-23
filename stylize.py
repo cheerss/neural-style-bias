@@ -98,10 +98,10 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         content_loss = 0
         content_losses = []
         for content_layer in CONTENT_LAYERS:
-            content_losses.append(binary_crossentropy(content_features[content_layer], net[content_layer]))
-            # content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
-            #         net[content_layer] - content_features[content_layer]) /
-            #         content_features[content_layer].size))
+            # content_losses.append(binary_crossentropy(content_features[content_layer], net[content_layer]))
+            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+                    net[content_layer] - content_features[content_layer]) /
+                    content_features[content_layer].size))
         content_loss += reduce(tf.add, content_losses)
 
         #bias loss
@@ -153,9 +153,9 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 (tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]) /
                     tv_x_size))
         # overall loss
-        loss = content_loss
+        # loss = content_loss
         # loss = bias_loss + content_loss
-        # loss = style_loss + content_loss
+        loss = style_loss + content_loss
 
         # optimizer setup
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
