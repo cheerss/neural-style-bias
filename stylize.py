@@ -72,7 +72,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
                 maps[i][layer] = features
-                gram = np.matmul(features.T, features) / features.size / 4
+                gram = np.matmul(features.T, features) / features.size
                 style_features[i][layer] = gram
 
     initial_content_noise_coeff = 1.0 - initial_noiseblend
