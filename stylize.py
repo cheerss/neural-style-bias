@@ -119,6 +119,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 biases.append(bias)
             for i in range(bias.shape[1]):
                 k = random.randint(0, len(styles)-1)
+                stderr.write('k: ' + str(k) + ' i: ' + str(i) + '\n')
                 bias[:,i] = biases[k][:,i];
 
             # stderr.write('bias.shape: ' + str(bias.shape) + '\n')
