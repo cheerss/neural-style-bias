@@ -166,8 +166,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     tv_x_size))
         # overall loss
         # loss = content_loss
-        # loss = bias_loss + content_loss
-        loss = style_loss + content_loss
+        loss = bias_loss + content_loss
+        # loss = style_loss + content_loss
 
         # optimizer setup
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
