@@ -176,6 +176,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             stderr.write('  content loss: %g\n' % content_loss.eval())
             stderr.write('    style loss: %g\n' % style_loss.eval())
             stderr.write('       tv loss: %g\n' % tv_loss.eval())
+            stderr.write('     bias loss: %g\n' % bias_loss.eval())
             stderr.write('    total loss: %g\n' % loss.eval())
 
         # optimization
@@ -188,6 +189,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             for i in range(iterations):
                 stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
                 stderr.write('content loss: %g\n' % content_loss.eval())
+                stderr.write('bias loss: %g\n' % bias_loss.eval())
                 train_step.run()
 
                 last_step = (i == iterations - 1)
