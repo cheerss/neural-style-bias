@@ -118,6 +118,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 bias = np.reshape(np.sum(maps[i][layer], axis=0), [1, -1])
                 biases.append(bias)
             for i in range(bias.shape[1]):
+                stderr.write('shape: ' + str(bias.shape[1]) + '\n')
                 k = random.randint(0, len(styles)-1)
                 stderr.write('k: ' + str(k) + ' i: ' + str(i) + '\n')
                 bias[:,i] = biases[k][:,i];
