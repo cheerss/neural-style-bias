@@ -4,6 +4,7 @@ import vgg
 
 import tensorflow as tf
 import numpy as np
+import random
 
 from sys import stderr
 
@@ -53,7 +54,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
     # compute content features in feedforward mode
     g = tf.Graph()
-    with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
+    with g.as_default(), g.device('/gpu:0'), tf.Session() as sess:
         image = tf.placeholder('float', shape=shape)
         net = vgg.net_preloaded(vgg_weights, image, pooling)
         content_pre = np.array([vgg.preprocess(content, vgg_mean_pixel)])
@@ -64,7 +65,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     maps = [{} for _ in styles]
     for i in range(len(styles)):
         g = tf.Graph()
-        with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
+        with g.as_default(), g.device('/gpu:0'), tf.Session() as sess:
             image = tf.placeholder('float', shape=style_shapes[i])
             net = vgg.net_preloaded(vgg_weights, image, pooling)
             style_pre = np.array([vgg.preprocess(styles[i], vgg_mean_pixel)])
@@ -107,27 +108,35 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         #bias loss
         bias_loss = 0
         maps_bias = [{} for _ in styles]
-        for i in range(len(styles)):
-            bias_losses = []
-            for layer in STYLE_LAYERS:
-                stderr.write('maps[i][layer]: ' + str(maps[i][layer].shape) + '\n')
+        # for i in range(len(styles)):
+        bias_losses = []
+        biases = []
+        for layer in STYLE_LAYERS:
+            # stderr.write('maps[i][layer]: ' + str(maps[i][layer].shape) + '\n')
+            for i in range(len(styles)):
                 bias = np.reshape(np.sum(maps[i][layer], axis=0), [1, -1])
-                stderr.write('bias.shape: ' + str(bias.shape) + '\n')
-                assert bias.shape[0] == 1
-                bias = np.tile(bias, [bias.shape[1], 1])
-                assert bias.shape[0] == bias.shape[1]
-                gram_bias = bias.T - bias
-                maps_bias[i][layer] = gram_bias
+                biases.append(bias)
+            for i in range(bias.shape[1]):
+                k = random.randint(0, len(styles)-1)
+                bias[:,i] = biases[k][:,i];
 
-                style_layer = net[layer]
-                _, height, width, number = map(lambda i: i.value, style_layer.get_shape())
-                size = height * width * number
-                feats = tf.reshape(style_layer, (-1, number))
-                feats = tf.reshape(tf.reduce_sum(feats, axis=0), [1, -1])
-                feats = tf.tile(feats, [number, 1])
-                feats_bias = tf.transpose(feats) - feats
-                bias_losses.append(2 * tf.nn.l2_loss(feats_bias - gram_bias) / number / number)
-            bias_loss += style_weight * style_blend_weights[i] * reduce(tf.add, bias_losses)
+            # stderr.write('bias.shape: ' + str(bias.shape) + '\n')
+            assert bias.shape[0] == 1
+            bias = np.tile(bias, [bias.shape[1], 1])
+            assert bias.shape[0] == bias.shape[1]
+            gram_bias = bias.T - bias
+            maps_bias[i][layer] = gram_bias
+
+            style_layer = net[layer]
+            _, height, width, number = map(lambda i: i.value, style_layer.get_shape())
+            size = height * width * number
+            feats = tf.reshape(style_layer, (-1, number))
+            feats = tf.reshape(tf.reduce_sum(feats, axis=0), [1, -1])
+            feats = tf.tile(feats, [number, 1])
+            feats_bias = tf.transpose(feats) - feats
+            bias_losses.append(2 * tf.nn.l2_loss(feats_bias - gram_bias) / number / number)
+        # bias_loss += style_weight * style_blend_weights[i] * reduce(tf.add, bias_losses)
+        bias_loss += style_weight * reduce(tf.add, bias_losses)
 
 
         # style loss
@@ -170,63 +179,22 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         best_loss = float('inf')
         best = None
         with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            stderr.write('Optimization started...\n')
-            if (print_iterations and print_iterations != 0):
-                print_progress()
+            sess.run(tf.initialize_all_variables())
             for i in range(iterations):
-                stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
-                stderr.write('content loss: %g\n' % content_loss.eval())
-                train_step.run()
-
                 last_step = (i == iterations - 1)
-                if last_step or (print_iterations and i % print_iterations == 0):
-                    print_progress()
+                print_progress(i, last=last_step)
+                train_step.run()
 
                 if (checkpoint_iterations and i % checkpoint_iterations == 0) or last_step:
                     this_loss = loss.eval()
                     if this_loss < best_loss:
                         best_loss = this_loss
                         best = image.eval()
-
-                    img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
-
-                    if preserve_colors and preserve_colors == True:
-                        original_image = np.clip(content, 0, 255)
-                        styled_image = np.clip(img_out, 0, 255)
-
-                        # Luminosity transfer steps:
-                        # 1. Convert stylized RGB->grayscale accoriding to Rec.601 luma (0.299, 0.587, 0.114)
-                        # 2. Convert stylized grayscale into YUV (YCbCr)
-                        # 3. Convert original image into YUV (YCbCr)
-                        # 4. Recombine (stylizedYUV.Y, originalYUV.U, originalYUV.V)
-                        # 5. Convert recombined image from YUV back to RGB
-
-                        # 1
-                        styled_grayscale = rgb2gray(styled_image)
-                        styled_grayscale_rgb = gray2rgb(styled_grayscale)
-
-                        # 2
-                        styled_grayscale_yuv = np.array(Image.fromarray(styled_grayscale_rgb.astype(np.uint8)).convert('YCbCr'))
-
-                        # 3
-                        original_yuv = np.array(Image.fromarray(original_image.astype(np.uint8)).convert('YCbCr'))
-
-                        # 4
-                        w, h, _ = original_image.shape
-                        combined_yuv = np.empty((w, h, 3), dtype=np.uint8)
-                        combined_yuv[..., 0] = styled_grayscale_yuv[..., 0]
-                        combined_yuv[..., 1] = original_yuv[..., 1]
-                        combined_yuv[..., 2] = original_yuv[..., 2]
-
-                        # 5
-                        img_out = np.array(Image.fromarray(combined_yuv, 'YCbCr').convert('RGB'))
-
-
                     yield (
                         (None if last_step else i),
-                        img_out
+                        vgg.unprocess(best.reshape(shape[1:]), mean_pixel)
                     )
+
 
 def binary_crossentropy(a, b):
     def sigmoid(x):
