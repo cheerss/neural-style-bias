@@ -183,28 +183,28 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         best = None
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
-        if (print_iterations and print_iterations != 0):
-            print_progress()
-        for i in range(iterations):
-            stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
-            stderr.write('content loss: %g\n' % content_loss.eval())
-            train_step.run()
-
-            last_step = (i == iterations - 1)
-            if last_step or (print_iterations and i % print_iterations == 0):
+            if (print_iterations and print_iterations != 0):
                 print_progress()
+            for i in range(iterations):
+                stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
+                stderr.write('content loss: %g\n' % content_loss.eval())
+                train_step.run()
 
-            if (checkpoint_iterations and i % checkpoint_iterations == 0) or last_step:
-                this_loss = loss.eval()
-                if this_loss < best_loss:
-                    best_loss = this_loss
-                    best = image.eval()
+                last_step = (i == iterations - 1)
+                if last_step or (print_iterations and i % print_iterations == 0):
+                    print_progress()
 
-                img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
-                yield (
-                    (None if last_step else i),
-                    img_out
-                )
+                if (checkpoint_iterations and i % checkpoint_iterations == 0) or last_step:
+                    this_loss = loss.eval()
+                    if this_loss < best_loss:
+                        best_loss = this_loss
+                        best = image.eval()
+
+                    img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
+                    yield (
+                        (None if last_step else i),
+                        img_out
+                    )
 
 
 def binary_crossentropy(a, b):
