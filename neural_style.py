@@ -25,7 +25,7 @@ BETA2 = 0.999
 EPSILON = 1e-08
 STYLE_SCALE = 1.0
 ITERATIONS = 1000
-VGG_PATH = '../neural-style-modified/vgg.mat'
+VGG_PATH = './vgg.mat'
 STYLE_PATH = './examples/1-style.jpg'
 CONTENT_PATH = './examples/1-content.jpg'
 OUT_PATH = './examples/cross_entropy/output.jpg'
@@ -119,8 +119,8 @@ def main():
 
     content_image = imread(options.content)
     stderr.write(str(options.styles))
-    # style_images = [imread(style) for style in options.styles]
-    style_images = [imread(options.styles),]
+    style_images = [imread(style) for style in options.styles]
+    # style_images = [imread(options.styles),]
 
     width = options.width
     if width is not None:
