@@ -111,16 +111,16 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         # maps_bias = [{} for _ in styles]
         # for i in range(len(styles)):
         bias_losses = []
-        biases = []
         for layer in STYLE_LAYERS:
             # stderr.write('maps[i][layer]: ' + str(maps[i][layer].shape) + '\n')
+            biases = []
             for i in range(len(styles)):
                 bias = np.reshape(np.sum(maps[i][layer], axis=0), [1, -1])
                 biases.append(bias)
             for i in range(bias.shape[1]):
-                stderr.write('shape: ' + str(bias.shape[1]) + '\n')
+                # stderr.write('shape: ' + str(bias.shape[1]) + '\n')
                 k = random.randint(0, len(styles)-1)
-                stderr.write('k: ' + str(k) + ' i: ' + str(i) + '\n')
+                # stderr.write('k: ' + str(k) + ' i: ' + str(i) + '\n')
                 bias[:,i] = biases[k][:,i];
 
             # stderr.write('bias.shape: ' + str(bias.shape) + '\n')
