@@ -107,7 +107,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
         #bias loss
         bias_loss = 0
-        maps_bias = [{} for _ in styles]
+        maps_bias = {}
+        # maps_bias = [{} for _ in styles]
         # for i in range(len(styles)):
         bias_losses = []
         biases = []
@@ -125,7 +126,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             bias = np.tile(bias, [bias.shape[1], 1])
             assert bias.shape[0] == bias.shape[1]
             gram_bias = bias.T - bias
-            maps_bias[i][layer] = gram_bias
+            maps_bias[layer] = gram_bias
 
             style_layer = net[layer]
             _, height, width, number = map(lambda i: i.value, style_layer.get_shape())
