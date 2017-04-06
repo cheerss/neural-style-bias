@@ -73,7 +73,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
                 maps[i][layer] = features
-                gram = np.matmul(features.T, features) / features.size
+                gram = np.matmul(features.T, features) / features.size / 2
                 style_features[i][layer] = gram
 
     initial_content_noise_coeff = 1.0 - initial_noiseblend
@@ -100,7 +100,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         content_losses = []
         for content_layer in CONTENT_LAYERS:
             # content_losses.append(binary_crossentropy(content_features[content_layer], net[content_layer]))
-            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+            content_losses.append(content_layers_weights[content_layer] * content_weight * (tf.nn.l2_loss(
                     net[content_layer] - content_features[content_layer]) /
                     content_features[content_layer].size))
         content_loss += reduce(tf.add, content_losses)
@@ -151,9 +151,10 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 _, height, width, number = map(lambda i: i.value, layer.get_shape())
                 size = height * width * number
                 feats = tf.reshape(layer, (-1, number))
-                gram = tf.matmul(tf.transpose(feats), feats) / size
+                gram = tf.matmul(tf.transpose(feats), feats) / size / 2
                 style_gram = style_features[i][style_layer]
-                style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+                # style_losses.append(style_layers_weights[style_layer] * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+                style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram))
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
 
         # total variation denoising
@@ -166,8 +167,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     tv_x_size))
         # overall loss
         # loss = content_loss
-        loss = bias_loss + content_loss
-        # loss = style_loss + content_loss
+        # loss = bias_loss + content_loss
+        loss = style_loss + content_loss
 
         # optimizer setup
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
@@ -188,8 +189,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 print_progress()
             for i in range(iterations):
                 stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
-                stderr.write('content loss: %g\n' % content_loss.eval())
-                stderr.write('bias loss: %g\n' % bias_loss.eval())
+                if(i % 10 == 0):
+                    stderr.write('content loss: %g\n' % content_loss.eval())
+                    stderr.write('style loss: %g\n' % style_loss.eval())
+                    stderr.write('total loss: %g\n' % loss.eval())
+                    # stderr.write('bias loss: %g\n' % bias_loss.eval())
                 train_step.run()
 
                 last_step = (i == iterations - 1)
