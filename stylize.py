@@ -100,9 +100,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         content_losses = []
         for content_layer in CONTENT_LAYERS:
             # content_losses.append(binary_crossentropy(content_features[content_layer], net[content_layer]))
-            content_losses.append(content_layers_weights[content_layer] * content_weight * (tf.nn.l2_loss(
-                    net[content_layer] - content_features[content_layer]) /
-                    content_features[content_layer].size))
+            content_losses.append(content_layers_weights[content_layer] * content_weight * tf.nn.l2_loss(
+                    net[content_layer] - content_features[content_layer]))
         content_loss += reduce(tf.add, content_losses)
 
         #bias loss
