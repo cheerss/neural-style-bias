@@ -166,7 +166,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     tv_x_size))
         # overall loss
         # loss = content_loss
-        loss = bias_loss + content_loss
+        loss = bias_loss + content_loss + tv_loss
         # loss = style_loss + content_loss
 
         # optimizer setup
@@ -184,13 +184,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         best = None
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
-            if (print_iterations and print_iterations != 0):
-                print_progress()
+            # if (print_iterations and print_iterations != 0):
+                # print_progress()
             for i in range(iterations):
                 stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
-                if(i % 10 == 0):
+                if(i % 100 == 0):
                     stderr.write('content loss: %g\n' % content_loss.eval())
                     stderr.write('bias loss: %g\n' % bias_loss.eval())
+                    stderr.write('tv loss: %g\n' % tv_loss.eval())
                     stderr.write('total loss: %g\n' % loss.eval())
                     # stderr.write('bias loss: %g\n' % bias_loss.eval())
                 train_step.run()
