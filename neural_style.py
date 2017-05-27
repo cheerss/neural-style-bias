@@ -11,6 +11,7 @@ import math
 from argparse import ArgumentParser
 
 from PIL import Image
+import time
 from sys import stderr
 
 # default arguments
@@ -19,7 +20,7 @@ CONTENT_WEIGHT_BLEND = 1
 STYLE_WEIGHT = 5e3
 TV_WEIGHT = 1e2
 STYLE_LAYER_WEIGHT_EXP = 1
-LEARNING_RATE = 5e-1
+LEARNING_RATE = 1e1
 BETA1 = 0.9
 BETA2 = 0.999
 EPSILON = 1e-08
@@ -113,6 +114,10 @@ def build_parser():
 def main():
     parser = build_parser()
     options = parser.parse_args()
+    f = open(options.output + ".txt", 'a+')
+
+    start = time.time()
+    start_c = time.clock()
 
     if not os.path.isfile(options.network):
         parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
@@ -193,6 +198,14 @@ def main():
         if output_file:
             imsave(output_file, combined_rgb)
 
+    stop = time.time()
+    stop_c = time.clock()
+
+    print("clock: " + str(stop_c - start_c))
+    print("time: " + str(stop - start))
+    f.write("clock: " + str(stop_c - start_c) + '\n')
+    f.write ("time: " + str(stop - start) + '\n')
+    f.close()
 
 def imread(path):
     img = scipy.misc.imread(path).astype(np.float)
