@@ -52,10 +52,10 @@ def build_parser():
             dest='print_iterations', help='statistics printing frequency',
             metavar='PRINT_ITERATIONS')
     parser.add_argument('--checkpoint-output',
-            dest='checkpoint_output', help='checkpoint output format, e.g. output%%s.jpg', default=CHECK_PATH,
+            dest='checkpoint_output', help='checkpoint output format, e.g. output%%s.jpg',
             metavar='OUTPUT')
     parser.add_argument('--checkpoint-iterations', type=int,
-            dest='checkpoint_iterations', help='checkpoint frequency', default=10,
+            dest='checkpoint_iterations', help='checkpoint frequency',
             metavar='CHECKPOINT_ITERATIONS')
     parser.add_argument('--width', type=int,
             dest='width', help='output width',
