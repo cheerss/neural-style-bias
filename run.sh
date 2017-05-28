@@ -1,7 +1,5 @@
-mkdir examples/0527
 
-CUDA_VISIBLE_DEVICES=2 python neural_style.py --content 'examples/tubingen.jpg' --styles 'examples/1-style.jpg' --iterations 150 --output 'examples/0527/t1-150.jpg'
-CUDA_VISIBLE_DEVICES=2 python neural_style.py --content 'examples/tubingen.jpg' --styles 'examples/7-style.jpg' --iterations 150 --output 'examples/0527/t7-150.jpg'
-CUDA_VISIBLE_DEVICES=2 python neural_style.py --content 'examples/tubingen.jpg' --styles 'examples/8-style.jpg' --iterations 150 --output 'examples/0527/t8-150.jpg'
 
-CUDA_VISIBLE_DEVICES=2 python neural_style.py --content 'examples/tubingen.jpg' --styles 'examples/9-style.jpg' --iterations 150 --output 'examples/0527/t9-150.jpg'
+CUDA_VISIBLE_DEVICES=2 python neural_style.py --content 'examples/tubingen.jpg' --styles 'examples/sumiao.jpg' --iterations 150 --output 'examples/output-1.jpg'
+CUDA_VISIBLE_DEVICES=2 python neural_style.py --content 'examples/4-content.jpg' --styles 'examples/sumiao.jpg' --iterations 150 --output 'examples/output-2.jpg'
+CUDA_VISIBLE_DEVICES=2 python neural_style.py --content 'examples/1-content.jpg' --styles 'examples/sumiao.jpg' --iterations 150 --output 'examples/output-3.jpg'
