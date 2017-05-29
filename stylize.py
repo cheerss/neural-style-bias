@@ -138,7 +138,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             feats_bias = tf.transpose(feats) - feats
             bias_losses.append(2 * tf.nn.l2_loss(feats_bias - gram_bias) / number / number)
         # bias_loss += style_weight * style_blend_weights[i] * reduce(tf.add, bias_losses)
-        bias_loss += 1e-7 * reduce(tf.add, bias_losses)
+        bias_loss += 1e-6 * reduce(tf.add, bias_losses)
 
 
         # style loss
