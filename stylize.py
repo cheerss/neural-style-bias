@@ -168,7 +168,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     tv_x_size))
         # overall loss
         # loss = content_loss
-        loss = bias_loss + content_loss + tv_loss
+        loss = bias_loss + tv_loss
+        # loss = bias_loss + content_loss + tv_loss
         # loss = style_loss + content_loss
 
         # optimizer setup
