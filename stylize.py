@@ -12,7 +12,7 @@ from PIL import Image
 
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 # STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
-STYLE_LAYERS = ('relu1_1', 'relu2_1')
+STYLE_LAYERS = ('relu1_1',)
 
 
 try:
@@ -168,8 +168,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     tv_x_size))
         # overall loss
         # loss = content_loss
-        loss = bias_loss + tv_loss
-        # loss = bias_loss + content_loss + tv_loss
+        # loss = bias_loss + tv_loss
+        loss = bias_loss + content_loss + tv_loss
         # loss = style_loss + content_loss
 
         # optimizer setup
